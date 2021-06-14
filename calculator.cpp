@@ -1,10 +1,21 @@
+/**
+    Small console calculator - includes operator precedence etc. (no brackets *yet*)
+    Copyright (C) 2021 iProgramInCpp
+    
+    Version V1.00
+**/
+
+
+// include all this garbage
 #include<iostream>
 #include<string>
 #include<sstream>
 #include<stack>
 #include<vector>
+
 using namespace std;
 
+// useful enums
 enum {
     TYPE_NONE,TYPE_NUMBER,TYPE_OPERATOR,
 
@@ -13,9 +24,11 @@ enum {
 enum {
     OP_NONE,OP_ADD,OP_SUB,OP_MUL,OP_DIV
 };
+// token
 struct Token {
     int type,value;
 };
+// error checking
 int g_error, g_head, g_errorLength;
 enum {
     ERROR_UNKNOWN,
@@ -33,12 +46,13 @@ std::string g_errorNames[] = {
     "Cannot divide by zero",
     "Calculation failure",
 };
+// useful macro
 #ifdef DEBUG
 #define OnError(Head, ErrorCode, ...) do { cout<<#ErrorCode; g_error = ErrorCode; g_head = Head; g_errorLength = strlen (#ErrorCode); return __VA_ARGS__; } while (0)
 #else
 #define OnError(Head, ErrorCode, ...) do { cout<<g_errorNames[ErrorCode]; g_error = ErrorCode; g_errorLength = g_errorNames[ErrorCode].size(); g_head = Head; return __VA_ARGS__; } while (0)
 #endif
-//helper to turn anything into a string, like ints/floats
+//helper to turn anything into a string, like ints/floats (stolen from proton sdk)
 template< class C>
 std::string toString(C value)
 {
@@ -47,6 +61,7 @@ std::string toString(C value)
 	return o.str();
 }
 
+//shunting yard algorithm
 std::stack<Token> g_output, g_opStack;
 
 int g_precedence[] = { 0, 1, 1, 2, 2 }; // mul&div have higher precedence than add&sub
@@ -71,6 +86,7 @@ void MoveLatestOperatorToOutput() {
 std::string g_operatorNames[] = {
     "NON","ADD","SUB","MUL","DIV"
 };
+// debug stuff
 void PrintToken(Token t) {
     std::string typeToStr, valueToStr;
     switch(t.type) {
@@ -78,7 +94,6 @@ void PrintToken(Token t) {
         case TYPE_NUMBER: typeToStr = "NUM", valueToStr = toString<int>(t.value); break;
         case TYPE_OPERATOR: typeToStr="OPR", valueToStr = g_operatorNames[t.value]; break;
         case TYPE_EOF: typeToStr = "EOF", valueToStr = "///"; break;
-
     }
     cout<<"{"<<typeToStr<<": "<<valueToStr<<"}";
 }
@@ -107,7 +122,7 @@ void PrintDebug() {
     //cout<<'\n';
     //cout<<'\n';
 }
-
+// reverses stack into a temporary one, then re-pops the elements into vector
 std::vector<Token> StackToVector() {
     std::vector<Token> ts;
     std::stack<Token> temp;
@@ -121,7 +136,7 @@ std::vector<Token> StackToVector() {
     }
     return ts;
 }
-
+// we finished writing the values of a token, process it
 void OnFinishThisToken(Token *t) {
     if (t->type == TYPE_NUMBER) {
         PushTokenToOutput(*t);
@@ -145,6 +160,7 @@ void OnFinishThisToken(Token *t) {
     t->type = TYPE_NONE;
     t->value = 0;
 }
+// turns operation into RPN (reverse Polish notation) using the Shunting yard algorithm
 void ParseOperation(std::string op) {
     op = op + "  ";
     Token t;
@@ -203,6 +219,7 @@ void PrintDebugList() {
     for(int i=0; i<g_tokens.size(); i++)
         PrintToken(g_tokens[i]);
 }
+// parses that RPN made by ParseOperation
 void ParseRPN() {
     g_tokens = StackToVector();
 
@@ -247,7 +264,7 @@ void ParseRPN() {
         }
     }
 }
-
+// checks error and prints a nice little arrow if head is specified (aka not negetive)
 void InternalCheckError() {
     if (!g_error) return;
     int p = 18+g_head;
@@ -262,7 +279,7 @@ void InternalCheckError() {
     cout<<'\n';
 }
 #define CheckError do { InternalCheckError(); if (g_error) return 0; } while (0)
-
+// entry point
 int main() {
     cout<<"put in operation: ";
     std::string op;
