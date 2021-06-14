@@ -1,3 +1,8 @@
+/**
+    Piece of shit crash thing, which does not require privileges. Based on QuickBSOD.
+    Copyright (C) 2021 iProgramInCpp
+**/
+
 #include <windows.h>
 #include <stdio.h>
 
