@@ -295,6 +295,6 @@ int main() {
     if (g_tokens.size() > 0)
         cout<<g_tokens[0].value;
     else
-        cout<<"???";
+        cout<<"???";//we didn't get any tokens?!
     return 0;
 }
